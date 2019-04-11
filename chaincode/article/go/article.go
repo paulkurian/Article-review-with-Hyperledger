@@ -50,6 +50,7 @@ type SmartContract struct {
 // Define the car structure, with 4 properties.  Structure tags are used by encoding/json library
 type Article struct {
 	Publisher  string `json:"publisher"`
+	Author   string `json:"author"`
 	Score  int `json:"score"`
 	
 }
@@ -86,20 +87,24 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) sc.Response 
 		return s.voteGood(APIstub, args)
 	} else if function == "voteBad" {
 		return s.voteBad(APIstub, args)
-	} else if function == "queryAllScores" {
-		return s.queryAllScores(APIstub)
-	} else if function == "queryArticleScore" {
-		return s.queryArticleScore(APIstub, args)
+	} else if function == "queryAllArticles" {
+		return s.queryAllArticles(APIstub)
+	} else if function == "queryArticle" {
+		return s.queryArticle(APIstub, args)
 	} else if function == "addArticle" {
 		return s.addArticle(APIstub, args)
-	} 
+	}  else if function == "queryAuthor"{
+		return s.queryAuthor(APIstub, args)
+	}  else if function == "queryPublisher"{
+		return s.queryPublisher(APIstub, args)
+	}
 
 	return shim.Error("Invalid Smart Contract function name.")
 }
 
 
 
-func (s *SmartContract) queryArticleScore(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+func (s *SmartContract) queryArticle(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
 	if len(args) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting 1")
@@ -114,8 +119,9 @@ func (s *SmartContract) queryArticleScore(APIstub shim.ChaincodeStubInterface, a
 
 func (s *SmartContract) initLedger(APIstub shim.ChaincodeStubInterface) sc.Response {
 	articles := []Article{
-		Article{Publisher: "Edict", Score: 0 },
-
+		Article{Publisher: "Edict", Author: "Paul Kurian", Score: 2 },
+		Article{Publisher: "ny", Author: "Paul Kurian", Score: 3 },
+		Article{Publisher: "ny", Author: "Adi Sangh", Score: 3 },
 	}
 
 	i := 0
@@ -135,13 +141,13 @@ func (s *SmartContract) initLedger(APIstub shim.ChaincodeStubInterface) sc.Respo
 }
 func (s *SmartContract) addArticle(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting 1")
+	if len(args) != 2 {
+		return shim.Error("Incorrect number of arguments. Expecting 2")
 	}
 
 	
 
-	var article = Article{Publisher: args[0], Score: 0}
+	var article = Article{Publisher: args[0],Author: args[1], Score: 0}
 
 	articleAsBytes, _ := json.Marshal(article)
 	APIstub.PutState("ART"+strconv.Itoa(lengthOfLedger), articleAsBytes)
@@ -152,10 +158,10 @@ func (s *SmartContract) addArticle(APIstub shim.ChaincodeStubInterface, args []s
 
 
 
-func (s *SmartContract) queryAllScores(APIstub shim.ChaincodeStubInterface) sc.Response {
+func (s *SmartContract) queryAllArticles(APIstub shim.ChaincodeStubInterface) sc.Response {
 
 	startKey := "ART0"
-	endKey := "ART999"
+	endKey := "ART"+strconv.Itoa(lengthOfLedger - 1)
 
 	resultsIterator, err := APIstub.GetStateByRange(startKey, endKey)
 	if err != nil {
@@ -243,6 +249,62 @@ func (s *SmartContract) voteBad(APIstub shim.ChaincodeStubInterface, args []stri
 	
 
 	return shim.Success(nil)
+}
+
+func (s *SmartContract) queryAuthor(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+	i := 0
+	authorScore := 0
+
+	for i < lengthOfLedger {
+		articleAsBytes, _ := APIstub.GetState("ART"+strconv.Itoa(i))
+		article := Article{}
+		json.Unmarshal(articleAsBytes, &article)
+		if article.Author == args[0] {
+			authorScore = authorScore + article.Score
+		} 
+	
+		articleAsBytes, _ = json.Marshal(article)
+		APIstub.PutState("ART"+strconv.Itoa(i), articleAsBytes)
+	
+	}
+
+	
+	fmt.Println(authorScore)
+	return shim.Success(nil)
+}
+
+func (s *SmartContract) queryPublisher(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+	i := 0
+	publisherScore := 0
+
+	
+
+
+	for i < lengthOfLedger {
+		articleAsBytes, _ := APIstub.GetState("ART"+strconv.Itoa(i))
+		article := Article{}
+		json.Unmarshal(articleAsBytes, &article)
+		if article.Publisher == args[0] {
+			publisherScore = publisherScore + article.Score
+		} 
+	
+		articleAsBytes, _ = json.Marshal(article)
+		APIstub.PutState("ART"+strconv.Itoa(i), articleAsBytes)
+	
+	}
+
+	var buffer bytes.Buffer
+	buffer.WriteString("Publisher Score: "+strconv.Itoa(publisherScore))
+
+	return shim.Success(buffer.Bytes())
 }
 
 

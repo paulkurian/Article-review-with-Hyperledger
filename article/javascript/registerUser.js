@@ -14,16 +14,17 @@ const ccp = JSON.parse(ccpJSON);
 
 async function main() {
     try {
-
+        const args=process.argv;
+        console.log(args[2])
         // Create a new file system based wallet for managing identities.
         const walletPath = path.join(process.cwd(), 'wallet');
         const wallet = new FileSystemWallet(walletPath);
         console.log(`Wallet path: ${walletPath}`);
 
         // Check to see if we've already enrolled the user.
-        const userExists = await wallet.exists('paulk');
+        const userExists = await wallet.exists(args[2]);
         if (userExists) {
-            console.log('An identity for the user "paulk" already exists in the wallet');
+            console.log('An identity for the user "'+args[2]+'" already exists in the wallet');
             return;
         }
 
@@ -44,14 +45,14 @@ async function main() {
         const adminIdentity = gateway.getCurrentIdentity();
 
         // Register the user, enroll the user, and import the new identity into the wallet.
-        const secret = await ca.register({ affiliation: 'org1.department1', enrollmentID: 'paulk', role: 'client' }, adminIdentity);
-        const enrollment = await ca.enroll({ enrollmentID: 'paulk', enrollmentSecret: secret });
+        const secret = await ca.register({ affiliation: 'org1.department1', enrollmentID: args[2], role: 'client' }, adminIdentity);
+        const enrollment = await ca.enroll({ enrollmentID: args[2], enrollmentSecret: secret });
         const userIdentity = X509WalletMixin.createIdentity('Org1MSP', enrollment.certificate, enrollment.key.toBytes());
-        wallet.import('paul!!', userIdentity);
-        console.log('Successfully registered and enrolled admin user "paulk" and imported it into the wallet');
+        wallet.import(args[2], userIdentity);
+        console.log('Successfully registered and enrolled admin user '+args[2]+' and imported it into the wallet');
 
     } catch (error) {
-        console.error(`Failed to register user "user1": ${error}`);
+        console.error('Failed to register user '+args[2]+': ${error}');
         process.exit(1);
     }
 }
