@@ -36,6 +36,8 @@ import (
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	sc "github.com/hyperledger/fabric/protos/peer"
+	"crypto/md5"
+    "encoding/hex"
 )
 
 var lengthOfLedger int = 0;
@@ -49,12 +51,26 @@ type SmartContract struct {
 
 // Define the car structure, with 4 properties.  Structure tags are used by encoding/json library
 type Article struct {
+	URL  string `json:"url"`
 	Publisher  string `json:"publisher"`
 	Author   string `json:"author"`
-	Score  int `json:"score"`
-	
+	Reliable_Score  int `json:"reliable_score"`
+	Unreliable_Score  int `json:"unreliable_score"`
+	Voters  []string `json:"voters"`
+	Verdict   string `json:"verdict"`
 }
 
+var articles = []Article{
+		Article{URL: "https://www.news18.com/", Publisher: "News 18", Author: "Paul Kurian", Reliable_Score: 5, Unreliable_Score: 4, Voters: []string{}, Verdict: "Undetermined"  },
+		Article{URL: "https://www.bbc.com/", Publisher: "BBC", Author: "Paul Kurian", Reliable_Score: 2, Unreliable_Score: 2, Voters: []string{}, Verdict: "Undetermined"},
+		Article{URL: "https://www.vox.com/", Publisher: "Vox", Author: "Adi Sangh", Reliable_Score: 2, Unreliable_Score: 2, Voters: []string{}, Verdict: "Undetermined"},
+	}
+
+func MD5Hash(text string) string {
+    hasher := md5.New()
+    hasher.Write([]byte(text))
+    return hex.EncodeToString(hasher.Sum(nil))
+}//Code inspired from https://gist.github.com/sergiotapia/8263278
 
 func contains(array []string, element string) bool {
     for _, a := range array {
@@ -64,18 +80,12 @@ func contains(array []string, element string) bool {
     }
     return false
 }
-/*
- * The Init method is called when the Smart Contract "fabcar" is instantiated by the blockchain network
- * Best practice is to have any Ledger initialization in separate function -- see initLedger()
- */
+
 func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) sc.Response {
 	return shim.Success(nil)
 }
 
-/*
- * The Invoke method is called as a result of an application request to run the Smart Contract "fabcar"
- * The calling application program has also specified the particular smart contract function to be called, with arguments
- */
+
 func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) sc.Response {
 
 	// Retrieve the requested Smart Contract function and arguments
@@ -97,7 +107,7 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) sc.Response 
 		return s.queryAuthor(APIstub, args)
 	}  else if function == "queryPublisher"{
 		return s.queryPublisher(APIstub, args)
-	}
+	}  
 
 	return shim.Error("Invalid Smart Contract function name.")
 }
@@ -118,40 +128,38 @@ func (s *SmartContract) queryArticle(APIstub shim.ChaincodeStubInterface, args [
 
 
 func (s *SmartContract) initLedger(APIstub shim.ChaincodeStubInterface) sc.Response {
-	articles := []Article{
-		Article{Publisher: "Edict", Author: "Paul Kurian", Score: 2 },
-		Article{Publisher: "ny", Author: "Paul Kurian", Score: 3 },
-		Article{Publisher: "ny", Author: "Adi Sangh", Score: 3 },
-	}
+	
 
 	i := 0
 	for i < len(articles) {
 		fmt.Println("i is ", i)
 		articleAsBytes, _ := json.Marshal(articles[i])
-		APIstub.PutState("ART"+strconv.Itoa(i), articleAsBytes)
+		APIstub.PutState(articles[i].URL, articleAsBytes)
 		fmt.Println("Added", articles[i])
 		i = i + 1
 
 	}
 
 	lengthOfLedger = len(articles)
+	fmt.Println(lengthOfLedger)
 
 
 	return shim.Success(nil)
 }
 func (s *SmartContract) addArticle(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	if len(args) != 2 {
-		return shim.Error("Incorrect number of arguments. Expecting 2")
+	if len(args) != 3 {
+		return shim.Error("Incorrect number of arguments. Expecting 3")
 	}
 
 	
 
-	var article = Article{Publisher: args[0],Author: args[1], Score: 0}
+	var article = Article{URL: args[0], Publisher: args[1],Author: args[2], Reliable_Score: 0, Unreliable_Score: 0, Voters: []string{}}
 
 	articleAsBytes, _ := json.Marshal(article)
-	APIstub.PutState("ART"+strconv.Itoa(lengthOfLedger), articleAsBytes)
+	APIstub.PutState(args[0], articleAsBytes)
 	lengthOfLedger = lengthOfLedger + 1
+	articles=append(articles,article)
 	return shim.Success(nil)
 }
 
@@ -160,8 +168,10 @@ func (s *SmartContract) addArticle(APIstub shim.ChaincodeStubInterface, args []s
 
 func (s *SmartContract) queryAllArticles(APIstub shim.ChaincodeStubInterface) sc.Response {
 
-	startKey := "ART0"
-	endKey := "ART"+strconv.Itoa(lengthOfLedger - 1)
+	startKey := ""
+	endKey := ""
+
+	fmt.Println("ENDKEY"+endKey)
 
 	resultsIterator, err := APIstub.GetStateByRange(startKey, endKey)
 	if err != nil {
@@ -202,29 +212,42 @@ func (s *SmartContract) queryAllArticles(APIstub shim.ChaincodeStubInterface) sc
 }
 
 
-
 func (s *SmartContract) voteGood(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
 	if len(args) != 2 {
 		return shim.Error("Incorrect number of arguments. Expecting 2")
 	}
 
-	
-	if contains(voterRecord, args[0]+" "+args[1]) == false {
-		articleAsBytes, _ := APIstub.GetState(args[0])
-		article := Article{}
-		json.Unmarshal(articleAsBytes, &article)
-		article.Score = article.Score + 1
+	articleAsBytes, _ := APIstub.GetState(args[0])
+	article := Article{}
+	json.Unmarshal(articleAsBytes, &article)
 
-		voterRecord = append(voterRecord, args[0]+" "+args[1])
+
+
+	if contains(article.Voters, MD5Hash("article"+args[1])) == false {
+		
+		article.Reliable_Score = article.Reliable_Score + 1
+
+		article.Voters = append(article.Voters, MD5Hash("article"+args[1]))
+
+		if (article.Reliable_Score<=int((2*article.Unreliable_Score)/3)){
+			article.Verdict="Unreliable"
+		} else if (article.Unreliable_Score<=int((2*article.Reliable_Score)/3)){
+			article.Verdict="Reliable"
+		} else{
+			article.Verdict="Undetermined"
+		}
+
+		
 		
 		articleAsBytes, _ = json.Marshal(article)
 		APIstub.PutState(args[0], articleAsBytes)
+		
 	} else {
 		return shim.Error("User: "+args[1]+" has already voted")
 	}
 	
-
+	
 	return shim.Success(nil)
 }
 func (s *SmartContract) voteBad(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
@@ -233,45 +256,76 @@ func (s *SmartContract) voteBad(APIstub shim.ChaincodeStubInterface, args []stri
 		return shim.Error("Incorrect number of arguments. Expecting 2")
 	}
 
-	
-	if contains(voterRecord, args[0]+" "+args[1]) == false {
-		articleAsBytes, _ := APIstub.GetState(args[0])
-		article := Article{}
-		json.Unmarshal(articleAsBytes, &article)
-		article.Score = article.Score - 1
-		voterRecord = append(voterRecord, args[0]+" "+args[1])
+	articleAsBytes, _ := APIstub.GetState(args[0])
+	article := Article{}
+	json.Unmarshal(articleAsBytes, &article)
+
+
+
+	if contains(article.Voters, MD5Hash("article"+args[1])) == false {
+		
+		article.Unreliable_Score = article.Unreliable_Score + 1
+
+		article.Voters = append(article.Voters, MD5Hash("article"+args[1]))
+
+		if (article.Reliable_Score<=int((2*article.Unreliable_Score)/3)){
+			article.Verdict="Unreliable"
+		} else if (article.Unreliable_Score<=int((2*article.Reliable_Score)/3)){
+			article.Verdict="Reliable"
+		} else{
+			article.Verdict="Undetermined"
+		}
+
+		
+		
 		articleAsBytes, _ = json.Marshal(article)
 		APIstub.PutState(args[0], articleAsBytes)
+		
 	} else {
-		fmt.Println("User: "+args[1]+" has already voted")
+		return shim.Error("User: "+args[1]+" has already voted")
 	}
-
 	
-
+	
 	return shim.Success(nil)
 }
+
+
 
 func (s *SmartContract) queryAuthor(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
 	if len(args) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting 1")
 	}
-	i := 0
-	authorScore := 0
-	fmt.Println(lengthOfLedger)
-	for i < lengthOfLedger {
-		articleAsBytes, _ := APIstub.GetState("ART"+strconv.Itoa(i))
-		fmt.Println(lengthOfLedger)
-		article := Article{}
-		json.Unmarshal(articleAsBytes, &article)
-		if article.Author == args[0] {
-			authorScore = authorScore + article.Score
-		} 
-		i = i + 1
-		
-	}
-
 	
+	startKey := ""
+	endKey := ""
+
+	fmt.Println("ENDKEY"+endKey)
+
+	resultsIterator, err := APIstub.GetStateByRange(startKey, endKey)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	defer resultsIterator.Close()
+
+
+
+	authorScore := 0
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		article := Article{}
+		json.Unmarshal(queryResponse.Value, &article)
+		fmt.Println(article.URL)
+		if article.Author == args[0] {
+			fmt.Println("HI"+strconv.Itoa(article.Reliable_Score - article.Unreliable_Score))
+
+			authorScore = authorScore + article.Reliable_Score - article.Unreliable_Score
+		}
+	}
 	var buffer bytes.Buffer
 	buffer.WriteString("Author Score: "+strconv.Itoa(authorScore))
 
@@ -280,28 +334,39 @@ func (s *SmartContract) queryAuthor(APIstub shim.ChaincodeStubInterface, args []
 
 func (s *SmartContract) queryPublisher(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	if len(args) != 1 {
+		if len(args) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting 1")
 	}
-	i := 0
-	publisherScore := 0
-
 	
+	startKey := ""
+	endKey := ""
 
+	fmt.Println("ENDKEY"+endKey)
 
-	for i < lengthOfLedger {
-		articleAsBytes, _ := APIstub.GetState("ART"+strconv.Itoa(i))
-		article := Article{}
-		json.Unmarshal(articleAsBytes, &article)
-		if article.Publisher == args[0] {
-			publisherScore = publisherScore + article.Score
-		} 
-	
-		articleAsBytes, _ = json.Marshal(article)
-		APIstub.PutState("ART"+strconv.Itoa(i), articleAsBytes)
-		i = i + 1
+	resultsIterator, err := APIstub.GetStateByRange(startKey, endKey)
+	if err != nil {
+		return shim.Error(err.Error())
 	}
+	defer resultsIterator.Close()
 
+
+
+	publisherScore := 0
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		article := Article{}
+		json.Unmarshal(queryResponse.Value, &article)
+		fmt.Println(article.URL)
+		if article.Publisher == args[0] {
+			fmt.Println("HI"+strconv.Itoa(article.Reliable_Score - article.Unreliable_Score))
+
+			publisherScore = publisherScore + article.Reliable_Score - article.Unreliable_Score
+		}
+	}
 	var buffer bytes.Buffer
 	buffer.WriteString("Publisher Score: "+strconv.Itoa(publisherScore))
 
