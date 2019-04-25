@@ -258,23 +258,24 @@ func (s *SmartContract) queryAuthor(APIstub shim.ChaincodeStubInterface, args []
 	}
 	i := 0
 	authorScore := 0
-
+	fmt.Println(lengthOfLedger)
 	for i < lengthOfLedger {
 		articleAsBytes, _ := APIstub.GetState("ART"+strconv.Itoa(i))
+		fmt.Println(lengthOfLedger)
 		article := Article{}
 		json.Unmarshal(articleAsBytes, &article)
 		if article.Author == args[0] {
 			authorScore = authorScore + article.Score
 		} 
-	
-		articleAsBytes, _ = json.Marshal(article)
-		APIstub.PutState("ART"+strconv.Itoa(i), articleAsBytes)
-	
+		i = i + 1
+		
 	}
 
 	
-	fmt.Println(authorScore)
-	return shim.Success(nil)
+	var buffer bytes.Buffer
+	buffer.WriteString("Author Score: "+strconv.Itoa(authorScore))
+
+	return shim.Success(buffer.Bytes())
 }
 
 func (s *SmartContract) queryPublisher(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
@@ -298,7 +299,7 @@ func (s *SmartContract) queryPublisher(APIstub shim.ChaincodeStubInterface, args
 	
 		articleAsBytes, _ = json.Marshal(article)
 		APIstub.PutState("ART"+strconv.Itoa(i), articleAsBytes)
-	
+		i = i + 1
 	}
 
 	var buffer bytes.Buffer
