@@ -16,6 +16,7 @@
     "license": "Apache-2.0",
     "dependencies": {
         "body-parser": "^1.18.3",
+        "ejs": "^2.6.1",
         "express": "^4.16.4",
         "express-session": "^1.16.1",
         "fabric-ca-client": "~1.4.0",

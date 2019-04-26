@@ -154,7 +154,7 @@ func (s *SmartContract) addArticle(APIstub shim.ChaincodeStubInterface, args []s
 
 	
 
-	var article = Article{URL: args[0], Publisher: args[1],Author: args[2], Reliable_Score: 0, Unreliable_Score: 0, Voters: []string{}}
+	var article = Article{URL: args[0], Publisher: args[1],Author: args[2], Reliable_Score: 0, Unreliable_Score: 0, Voters: []string{}, Verdict: "Undetermined" }
 
 	articleAsBytes, _ := json.Marshal(article)
 	APIstub.PutState(args[0], articleAsBytes)
