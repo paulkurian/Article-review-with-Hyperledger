@@ -34,15 +34,16 @@ app.use(session({
 	saveUninitialized: true
 }));
 
-const { FileSystemWallet, Gateway } = require('fabric-network');
-const fs = require('fs');
 
-
-const ccpPath = path.resolve(__dirname, '..', '..', 'basic-network', 'connection.json');
-const ccpJSON = fs.readFileSync(ccpPath, 'utf8');
-const ccp = JSON.parse(ccpJSON);
 
 async function query(username) {
+	const { FileSystemWallet, Gateway } = require('fabric-network');
+	const fs = require('fs');
+
+
+	const ccpPath = path.resolve(__dirname, '..', '..', 'basic-network', 'connection.json');
+	const ccpJSON = fs.readFileSync(ccpPath, 'utf8');
+	const ccp = JSON.parse(ccpJSON);
 		try {
 		const args=process.argv;
 		console.log(username)
@@ -54,7 +55,7 @@ async function query(username) {
 		// Check to see if we've already enrolled the user.
 		const userExists = await wallet.exists(username);
 		if (!userExists) {
-		    console.log('An identity for the user'+username+' does not exist in the wallet');
+		    console.log('An identity for the user '+username+' does not exist in the wallet');
 		    console.log('Run the registerUser.js application before retrying');
 		    return;
 		}
@@ -77,10 +78,66 @@ async function query(username) {
 		//console.log(`Transaction has been evaluated, result is: ${result.toString()}`);
 		return result;
 
-    } catch (error) {
+    } catch(error){
         console.error(`Failed to evaluate transaction: ${error}`);
         process.exit(1);
     }
+}
+
+async function regUser(username) {
+		const { FileSystemWallet, Gateway, X509WalletMixin } = require('fabric-network');
+		const fs = require('fs');
+
+
+		const ccpPath = path.resolve(__dirname, '..', '..', 'basic-network', 'connection.json');
+		const ccpJSON = fs.readFileSync(ccpPath, 'utf8');
+		const ccp = JSON.parse(ccpJSON);
+
+	    try {
+	        
+	        // Create a new file system based wallet for managing identities.
+	        const walletPath = path.join(process.cwd(), 'wallet');
+	        const wallet = new FileSystemWallet(walletPath);
+	        console.log(`Wallet path: ${walletPath}`);
+
+	        // Check to see if we've already enrolled the user.
+	        const userExists = await wallet.exists(username);
+
+	        if (userExists) {
+	            console.log('An identity for the user "'+username+'" already exists in the wallet');
+	            return;
+	        }
+
+	        // Check to see if we've already enrolled the admin user.
+	        const adminExists = await wallet.exists('admin');
+	        if (!adminExists) {
+	            console.log('An identity for the admin user "admin" does not exist in the wallet');
+	            console.log('Run the enrollAdmin.js application before retrying');
+	            return;
+	        }
+
+	        // Create a new gateway for connecting to our peer node.
+	        const gateway = new Gateway();
+	        await gateway.connect(ccp, { wallet, identity: 'admin', discovery: { enabled: false } });
+
+	        // Get the CA client object from the gateway for interacting with the CA.
+	        const ca = gateway.getClient().getCertificateAuthority();
+	        const adminIdentity = gateway.getCurrentIdentity();
+
+	        // Register the user, enroll the user, and import the new identity into the wallet.
+	        const secret = await ca.register({ affiliation: 'org1.department1', enrollmentID: username, role: 'client' }, adminIdentity);
+	        const enrollment = await ca.enroll({ enrollmentID: username, enrollmentSecret: secret });
+	        const userIdentity = X509WalletMixin.createIdentity('Org1MSP', enrollment.certificate, enrollment.key.toBytes());
+	        wallet.import(username, userIdentity);
+	        console.log('Successfully registered and enrolled user '+username+' and imported it into the wallet');
+	        
+			
+
+	    } catch(error){
+	        console.error(`Failed to register user `+username+`: ${error}`);
+	        process.exit(1);
+	    }
+	    
 }
 
 
@@ -114,7 +171,6 @@ app.get('/register', function(request, response) {
 });
 
 
-
 app.post('/register', function(request, response) {
 	var username = request.body.username;
 	var password = request.body.password;
@@ -128,15 +184,22 @@ app.post('/register', function(request, response) {
 			if (results) {
 				request.session.loggedin = true;
 				request.session.username = username;
-				response.redirect('/regUser');
+				regUser(username).then(function(){
+					    
+					}).catch(function(){
+					    console.log("Error from regUser");
+					    //response.render(JSON.stringify(msg));
+					});
+
+				response.redirect('/');
 			} else {
 				response.send('Please enter valid data VALUES');
 			}			
-			response.end();
+			//response.end();
 		});
 	} else {
 		response.send('Please enter Username and Password!');
-		response.end();
+		//response.end();
 	}
 });
 
@@ -161,104 +224,47 @@ app.post('/auth', function(request, response) {
 				if (results.length > 0) {
 					request.session.loggedin = true;
 					request.session.username = username;
-					response.redirect('/regUser');
+
+					regUser(username).then(function(){
+					    
+					}).catch(function(){
+					    console.log("Error from regUser");
+					    //response.render(JSON.stringify(msg));
+					});
+					response.redirect('/home');
 				} else {
 					response.send('Incorrect Username and/or Password!');
 				}			
-				response.end();
+				//response.end();
 			});
 		
 	} else {
 		response.send('Please enter Username and Password!');
-		response.end();
+		//response.end();
 	}
 });
 
 
-app.get('/regUser', function(request, response) {
-	
-
-		/*
-	 * SPDX-License-Identifier: Apache-2.0
-	 */
-	'use strict';
-
-	const { FileSystemWallet, Gateway, X509WalletMixin } = require('fabric-network');
-	const fs = require('fs');
-	const path = require('path');
-
-	const ccpPath = path.resolve(__dirname, '..', '..', 'basic-network', 'connection.json');
-	const ccpJSON = fs.readFileSync(ccpPath, 'utf8');
-	const ccp = JSON.parse(ccpJSON);
-
-	async function main() {
-	    try {
-	        
-	        // Create a new file system based wallet for managing identities.
-	        const walletPath = path.join(process.cwd(), 'wallet');
-	        const wallet = new FileSystemWallet(walletPath);
-	        console.log(`Wallet path: ${walletPath}`);
-
-	        // Check to see if we've already enrolled the user.
-	        const userExists = await wallet.exists(request.session.username);
-	        if (userExists) {
-	            console.log('An identity for the user "'+request.session.username+'" already exists in the wallet');
-	            return;
-	        }
-
-	        // Check to see if we've already enrolled the admin user.
-	        const adminExists = await wallet.exists('admin');
-	        if (!adminExists) {
-	            console.log('An identity for the admin user "admin" does not exist in the wallet');
-	            console.log('Run the enrollAdmin.js application before retrying');
-	            return;
-	        }
-
-	        // Create a new gateway for connecting to our peer node.
-	        const gateway = new Gateway();
-	        await gateway.connect(ccp, { wallet, identity: 'admin', discovery: { enabled: false } });
-
-	        // Get the CA client object from the gateway for interacting with the CA.
-	        const ca = gateway.getClient().getCertificateAuthority();
-	        const adminIdentity = gateway.getCurrentIdentity();
-
-	        // Register the user, enroll the user, and import the new identity into the wallet.
-	        const secret = await ca.register({ affiliation: 'org1.department1', enrollmentID: request.session.username, role: 'client' }, adminIdentity);
-	        const enrollment = await ca.enroll({ enrollmentID: request.session.username, enrollmentSecret: secret });
-	        const userIdentity = X509WalletMixin.createIdentity('Org1MSP', enrollment.certificate, enrollment.key.toBytes());
-	        wallet.import(request.session.username, userIdentity);
-	        console.log('Successfully registered and enrolled admin user '+request.session.username+' and imported it into the wallet');
-	        
-
-
-	    } catch (error) {
-	        console.error('Failed to register user '+request.session.username+': ${error}');
-	        process.exit(1);
-	    }
-	}
-
-	main();
-response.redirect('/home');
-	
-});
 
 
 app.get('/home', function(request, response) {
 
+	console.log('welcome')
 	
 
-	//if (request.session.loggedin) {
+	if (request.session.loggedin) {
 		
 		console.log('welcome')
-		//response.send("Hi")
+		//
 
-		query("test").then(function(msg){
-		    console.log(msg.toString());
-		   response.send(msg.toString());
-		}).catch(function(msg){
-		    console.log(msg.toString());
-		    //response.render(JSON.stringify(msg));
-		});
+		query(request.session.username).then(function(msg){
+		     console.log(msg.toString());
+		    //response.sendFile(path.join(__dirname + '/home.html'));
+		    response.send(msg.toString());
+		 }).catch(function(msg){
+		     console.log(msg.toString());
+		     response.render(JSON.stringify(msg));
+		 });
 
 		
 		
@@ -266,13 +272,13 @@ app.get('/home', function(request, response) {
 
 		//response.send(result)
 
-		//response.sendFile(path.join(__dirname + '/home.html'));
+		//
 
 
 
-	// } else {
-	// 	response.send('Please login to view this page!');
-	// }
+	} else {
+		response.send('Please login to view this page!');
+	}
 	//response.end();
 });
 
