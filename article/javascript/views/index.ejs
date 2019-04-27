@@ -5,27 +5,27 @@
 		<title>Login Form Tutorial</title>
 		<style>
 		.login-form {
-			width: 300px;
+			width: 900px;
 			margin: 0 auto;
 			font-family: Tahoma, Geneva, sans-serif;
 		}
 		.login-form h1 {
 			text-align: ;
 			color: #4d4d4d;
-			font-size: 30px;
+			font-size: 32px;
 			padding: 20px 0 20px 0;
 		}
 		.login-form input[type="password"],
 		.login-form input[type="text"] {
-			width: 90%;
-			padding: 15px;
+			width: 70%;
+			padding: 12px;
 			border: 1px solid #dddddd;
 			margin-bottom: 15px;
 			box-sizing:border-box;
 		}
 		.login-form input[type="submit"] {
-			width: 100%;
-			padding: 15px;
+			width: 60%;
+			padding: 12px;
 			background-color: #535b63;
 			border: 0;
 			box-sizing: border-box;
@@ -70,18 +70,22 @@
 
 <body>
 <div class="login-form">
-<h1>Voter Interface</h1>
-<p> Article url-Author-Publisher</p>
+<h1 align="center">Voter Interface</h1>
+<p><mark></mark> Article url</mark> <i>-Author </i>-Publisher-<b> Verdict </b></p>
 
 <ul> 
 	<% obj.forEach(function(obj){ %>
-	<li><p> <%=obj.Record.url%>- <%=obj.Record.author%> -<%=obj.Record.publisher%> <%=obj.Record.verdict%></p> </li>  
+	<li><p> <mark> <%=obj.Record.url%> </mark>- <i><%=obj.Record.author%> </i> -<%=obj.Record.publisher%>- <b><%=obj.Record.verdict%> </b></p> </li>  
 	<% }) %>
 </ul>
-<a href="/addarticle">Add new article</a>
+
+<p align="center"> <a  href="/authorpub">query author/publisher</a>  <a href="/addarticle">Add new article</a></p>
+
+
+
 
 <form action="vote" method="post">
-	<p>Please enter url of the article you wish to vote on</p>
+	<p>Please enter url of the article you wish to vote on-</p>
 	<input type="text" name="url">
 
 	Reliable:
@@ -93,6 +97,27 @@
 
 	
 </form>
+
+<!-- <form action="authorscore" method="post">
+	<p>Search AUTHOR Score</p>
+	<input type="text" name="author">
+
+	
+
+	<input type="submit" name="vote">
+
+	
+</form>
+<form action="authorscore" method="post">
+	<p>Search AUTHOR Score</p>
+	<input type="text" name="author">
+
+	
+
+	<input type="submit" name="vote">
+
+	
+</form> -->
 </div>
 
 

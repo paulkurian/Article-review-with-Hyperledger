@@ -36,7 +36,7 @@ app.use(session({
 
 
 
-async function query(username) {
+async function query(args) {
 	const { FileSystemWallet, Gateway } = require('fabric-network');
 	const fs = require('fs');
 
@@ -45,24 +45,24 @@ async function query(username) {
 	const ccpJSON = fs.readFileSync(ccpPath, 'utf8');
 	const ccp = JSON.parse(ccpJSON);
 		try {
-		const args=process.argv;
-		console.log(username)
+		
+		console.log(args[0])
 		// Create a new file system based wallet for managing identities.
 		const walletPath = path.join(process.cwd(), 'wallet');
 		const wallet = new FileSystemWallet(walletPath);
 		console.log(`Wallet path: ${walletPath}`);
 
 		// Check to see if we've already enrolled the user.
-		const userExists = await wallet.exists(username);
+		const userExists = await wallet.exists(args[0]);
 		if (!userExists) {
-		    console.log('An identity for the user '+username+' does not exist in the wallet');
+		    console.log('An identity for the user '+args[0]+' does not exist in the wallet');
 		    console.log('Run the registerUser.js application before retrying');
 		    return;
 		}
 
 		// Create a new gateway for connecting to our peer node.
 		const gateway = new Gateway();
-		await gateway.connect(ccp, { wallet, identity: username, discovery: { enabled: false } });
+		await gateway.connect(ccp, { wallet, identity: args[0], discovery: { enabled: false } });
 
 		// Get the network (channel) our contract is deployed to.
 		const network = await gateway.getNetwork('mychannel');
@@ -70,10 +70,11 @@ async function query(username) {
 		// Get the contract from the network.
 		const contract = network.getContract('article');
 
-		// Evaluate the specified transaction.
-		// queryCar transaction - requires 1 argument, ex: ('queryCar', 'CAR4')
-		// queryAllCars transaction - requires no arguments, ex: ('queryAllCars')
-		var result = await contract.evaluateTransaction('queryAllArticles');
+		
+
+		args.splice(0,1)
+        console.log(args)
+		var result = await contract.evaluateTransaction(...args);
 		//console.log("HIquery");
 		//console.log(`Transaction has been evaluated, result is: ${result.toString()}`);
 		return result;
@@ -83,58 +84,9 @@ async function query(username) {
         process.exit(1);
     }
 }
-async function vote(username,voteFunc, url) {
-	const { FileSystemWallet, Gateway } = require('fabric-network');
-	const fs = require('fs');
 
-	console.log(voteFunc);
-	console.log(username)
-	console.log(url)
-	const ccpPath = path.resolve(__dirname, '..', '..', 'basic-network', 'connection.json');
-	const ccpJSON = fs.readFileSync(ccpPath, 'utf8');
-	const ccp = JSON.parse(ccpJSON);
-		try {
-		const args=process.argv;
-		console.log(username)
-		// Create a new file system based wallet for managing identities.
-		const walletPath = path.join(process.cwd(), 'wallet');
-		const wallet = new FileSystemWallet(walletPath);
-		console.log(`Wallet path: ${walletPath}`);
 
-		// Check to see if we've already enrolled the user.
-		const userExists = await wallet.exists(username);
-		if (!userExists) {
-		    console.log('An identity for the user '+username+' does not exist in the wallet');
-		    console.log('Run the registerUser.js application before retrying');
-		    return;
-		}
-
-		// Create a new gateway for connecting to our peer node.
-		const gateway = new Gateway();
-		await gateway.connect(ccp, { wallet, identity: username, discovery: { enabled: false } });
-
-		// Get the network (channel) our contract is deployed to.
-		const network = await gateway.getNetwork('mychannel');
-
-		// Get the contract from the network.
-		const contract = network.getContract('article');
-
-		// Evaluate the specified transaction.
-		// queryCar transaction - requires 1 argument, ex: ('queryCar', 'CAR4')
-		// queryAllCars transaction - requires no arguments, ex: ('queryAllCars')
-		await contract.submitTransaction(voteFunc,url,username);
-		//console.log("HIquery");
-		//console.log(`Transaction has been evaluated, result is: ${result.toString()}`);
-		await gateway.disconnect();
-		return("Success")
-
-    } catch(error){
-        console.error(`Failed to evaluate transaction: ${error}`);
-        return ("You have already voted for this article")
-    }
-}
-
-async function addarticle(username,url,publisher,Author) {
+async function invoke(args) {
 	const { FileSystemWallet, Gateway } = require('fabric-network');
 	const fs = require('fs');
 
@@ -144,24 +96,23 @@ async function addarticle(username,url,publisher,Author) {
 	const ccp = JSON.parse(ccpJSON);
     try {
 
-        const args=process.argv;
-        console.log(username)
+        
         // Create a new file system based wallet for managing identities.
         const walletPath = path.join(process.cwd(), 'wallet');
         const wallet = new FileSystemWallet(walletPath);
         console.log(`Wallet path: ${walletPath}`);
 
         // Check to see if we've already enrolled the user.
-        const userExists = await wallet.exists(username);
+        const userExists = await wallet.exists(args[0]);
         if (!userExists) {
-            console.log('An identity for the user '+ username +'does not exist in the wallet');
+            console.log('An identity for the user '+ args[0] +'does not exist in the wallet');
             console.log('Run the registerUser.js application before retrying');
             return;
         }
 
         // Create a new gateway for connecting to our peer node.
         const gateway = new Gateway();
-        await gateway.connect(ccp, { wallet, identity: username, discovery: { enabled: false } });
+        await gateway.connect(ccp, { wallet, identity: args[0], discovery: { enabled: false } });
 
         // Get the network (channel) our contract is deployed to.
         const network = await gateway.getNetwork('mychannel');
@@ -169,12 +120,12 @@ async function addarticle(username,url,publisher,Author) {
         // Get the contract from the network.
         const contract = network.getContract('article');
 
-        // Submit the specified transaction.
-        // createCar transaction - requires 5 argument, ex: ('createCar', 'CAR12', 'Honda', 'Accord', 'Black', 'Tom')
-        // changeCarOwner transaction - requires 2 args , ex: ('changeCarOwner', 'CAR10', 'Dave')
-        await contract.submitTransaction('addArticle',url,publisher,Author);
+        args.splice(0,1)
+        console.log(args)
 
-        console.log('Transaction has been submitted'+url+publ);
+        await contract.submitTransaction(...args);
+
+        console.log('Transaction has been submitted');
 
         // Disconnect from the gateway.
         await gateway.disconnect();
@@ -272,6 +223,38 @@ app.get('/register', function(request, response) {
 	response.sendFile(path.join(__dirname + '/register.html'));
 });
 
+app.get('/authorpub', function(request, response) {
+	if (request.session.loggedin) {
+	response.render('authorscore')
+	} else {
+		response.redirect('/');
+	}
+	
+});
+
+
+app.post('/authorpub', function(request, response) {
+	var name=request.body.name;
+	var authpub = request.body.authpub;
+	var funcname = authpub
+		args=[request.session.username,funcname,name]
+	query(args).then(function(msg){
+		    
+
+		  //console.log(typeof msg+"heyt"); 
+		   
+		   response.render('authorscore',{obj:msg})
+		   
+			// }	
+		 }).catch(function(msg){
+		     //console.log(msg);
+		     //response.render(JSON.stringify(msg));
+		     response.render(msg)
+		 });
+	
+
+	
+});
 
 app.post('/register', function(request, response) {
 	var username = request.body.username;
@@ -362,8 +345,10 @@ var testObj
 	if (request.session.loggedin) {
 		
 		console.log('welcome')
+		var funcname = "queryAllArticles"
+		args=[request.session.username,funcname]
 		
-		query(request.session.username).then(function(msg){
+		query(args).then(function(msg){
 		    
 
 		    testObj=msg.toString();
@@ -392,19 +377,25 @@ var testObj
 });
 
 
+
+app.get('/vote', function(request, response) {
+response.redirect('/');	
+});
 app.post('/vote', function(request, response) {
 
 	var url = request.body.url
-	var voteFunc
+	
 	var reliability = request.body.reliability
+	var funcname
+	
 
 	if (reliability=="reliable"){
-		voteFunc="voteGood"
+		funcname="voteGood"
 	} else{
-		voteFunc="voteBad"
+		funcname="voteBad"
 	}
-	var outcome;
-	vote(request.session.username,voteFunc,url).then(function(msg){
+	args=[request.session.username,funcname,url,request.session.username]
+	invoke(args).then(function(msg){
 		    
 
 		  //console.log(typeof msg+"heyt"); 
@@ -420,19 +411,27 @@ app.post('/vote', function(request, response) {
 
 	
 });
+
+
+
 app.get('/addarticle', function(request, response) {
+	if (request.session.loggedin) {
 	response.sendFile(path.join(__dirname + '/AddArticle.html'));
-	
+	} else {
+		response.redirect('/');
+	}
 });
 
 app.post('/addarticle', function(request, response) {
 	var url = request.body.url
 	var Author = request.body.Author
 	var Publisher = request.body.Publisher
-
+	var funcname = "addArticle"
+	args=[request.session.username,funcname,url,Publisher,Author]
+	
 	
 
-	addarticle(request.session.username,url,Publisher,Author).then(function(msg){
+	invoke(args).then(function(msg){
 		    
 
 		  console.log(msg+"hegfsuykdhjbnakwsdt"); 
