@@ -21,6 +21,9 @@
         "express-session": "^1.16.1",
         "fabric-ca-client": "~1.4.0",
         "fabric-network": "~1.4.0",
+        "googleapis": "^39.2.0",
+        "jquery": "^3.4.1",
+        "js-md5": "^0.7.3",
         "mysql": "^2.17.1"
     },
     "devDependencies": {

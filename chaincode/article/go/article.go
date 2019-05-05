@@ -214,21 +214,31 @@ func (s *SmartContract) queryAllArticles(APIstub shim.ChaincodeStubInterface) sc
 
 func (s *SmartContract) voteGood(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	if len(args) != 2 {
-		return shim.Error("Incorrect number of arguments. Expecting 2")
+	if len(args) != 4 {
+		return shim.Error("Incorrect number of arguments. Expecting 4")
 	}
 
 	articleAsBytes, _ := APIstub.GetState(args[0])
+	
+
 	article := Article{}
 	json.Unmarshal(articleAsBytes, &article)
+	if (article.URL==""){
+		article.URL=args[0]
+	}
+	if (article.Publisher==""){
+		article.Publisher=args[1]
+	}
+	if (article.Author==""){
+		article.Author=args[2]
+	}
+	fmt.Println(args[3])
 
-
-
-	if contains(article.Voters, MD5Hash("article"+args[1])) == false {
+	if contains(article.Voters, MD5Hash("article"+args[3])) == false {
 		
 		article.Reliable_Score = article.Reliable_Score + 1
 
-		article.Voters = append(article.Voters, MD5Hash("article"+args[1]))
+		article.Voters = append(article.Voters, MD5Hash("article"+args[3]))
 
 		if (article.Reliable_Score<=int((2*article.Unreliable_Score)/3)){
 			article.Verdict="Unreliable"
@@ -244,7 +254,7 @@ func (s *SmartContract) voteGood(APIstub shim.ChaincodeStubInterface, args []str
 		APIstub.PutState(args[0], articleAsBytes)
 		
 	} else {
-		return shim.Error("User: "+args[1]+" has already voted")
+		return shim.Error("User: "+args[3]+" has already voted")
 	}
 	
 	
@@ -252,21 +262,31 @@ func (s *SmartContract) voteGood(APIstub shim.ChaincodeStubInterface, args []str
 }
 func (s *SmartContract) voteBad(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	if len(args) != 2 {
-		return shim.Error("Incorrect number of arguments. Expecting 2")
+	if len(args) != 4 {
+		return shim.Error("Incorrect number of arguments. Expecting 4")
 	}
 
 	articleAsBytes, _ := APIstub.GetState(args[0])
+	
 	article := Article{}
 	json.Unmarshal(articleAsBytes, &article)
 
 
+	if (article.URL==""){
+		article.URL=args[0]
+	}
+	if (article.Publisher==""){
+		article.Publisher=args[1]
+	}
+	if (article.Author==""){
+		article.Author=args[2]
+	}
 
-	if contains(article.Voters, MD5Hash("article"+args[1])) == false {
+	if contains(article.Voters, MD5Hash("article"+args[3])) == false {
 		
 		article.Unreliable_Score = article.Unreliable_Score + 1
 
-		article.Voters = append(article.Voters, MD5Hash("article"+args[1]))
+		article.Voters = append(article.Voters, MD5Hash("article"+args[3]))
 
 		if (article.Reliable_Score<=int((2*article.Unreliable_Score)/3)){
 			article.Verdict="Unreliable"
@@ -282,7 +302,7 @@ func (s *SmartContract) voteBad(APIstub shim.ChaincodeStubInterface, args []stri
 		APIstub.PutState(args[0], articleAsBytes)
 		
 	} else {
-		return shim.Error("User: "+args[1]+" has already voted")
+		return shim.Error("User: "+args[3]+" has already voted")
 	}
 	
 	

@@ -67,36 +67,109 @@
 		</style>
 	</head>
 
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script><!--Import jQuery before export.js-->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
 
+
+    <!--Data Table-->
+    <script type="text/javascript"  src=" https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript"  src=" https://cdn.datatables.net/buttons/1.2.4/js/dataTables.buttons.min.js"></script>
+
+    <!--Export table buttons-->
+    <script type="text/javascript"  src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
+    <script type="text/javascript" src="https://cdn.rawgit.com/bpampuch/pdfmake/0.1.24/build/pdfmake.min.js" ></script>
+    <script type="text/javascript"  src="https://cdn.rawgit.com/bpampuch/pdfmake/0.1.24/build/vfs_fonts.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.2.4/js/buttons.html5.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.2.1/js/buttons.print.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
 <body>
 <div class="login-form">
-<h1 align="center">Voter Interface</h1>
-<p><mark></mark> Article url</mark> <i>-Author </i>-Publisher-<b> Verdict </b></p>
+<h1 align="center">Your List</h1>
+<table id="example" class="ui celled table" style="width:100%">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Class</th>
+            <th>Parents Name</th>
+            <th>Age</th>
+            <th>Age</th>
+            <th>Age</th>
+            <th> Vote</th>
+        </tr>
+    </thead>
+</table>
 
-<ul> 
+<!-- <ul> 
 	<% obj.forEach(function(obj){ %>
 	<li><p> <mark> <%=obj.Record.url%> </mark>- <i><%=obj.Record.author%> </i> -<%=obj.Record.publisher%>- <b><%=obj.Record.verdict%> </b></p> </li>  
 	<% }) %>
-</ul>
+</ul> -->
+<script type="text/javascript">
 
-<p align="center"> <a  href="/authorpub">query author/publisher</a>  <a href="/addarticle">Add new article</a></p>
-
-
-
-
-<form action="vote" method="post">
-	<p>Please enter url of the article you wish to vote on-</p>
-	<input type="text" name="url">
-
-	Reliable:
-	<input type="radio" name="reliability" value="reliable">
-	Not Reliable:
-	<input type="radio" name="reliability" value="Not">
-
-	<input type="submit" name="vote">
+	var json_data = <%-JSON.stringify(data)%>;
 
 	
-</form>
+
+	// var voters = [];
+
+	// for(var voter in json_data){
+
+	// }
+
+	$('#example').DataTable( {
+	  // ajax: '/worldstate',
+	  data: json_data,
+	  render: $.fn.dataTable.render.text(),
+	  columns: [
+        { title: "URL", "data": "Record.url" },
+        { title: "Author", "data": "Record.author" },
+        { title: "Publisher", "data": "Record.publisher" },
+		{ title: "Reliable Score", "data": "Record.reliable_score"},
+		{ title: "Unreliable Score", "data": "Record.unreliable_score"},
+        { title: "Verdict", "data": "Record.verdict"},
+        {
+      "data": null,
+      "defaultContent": "<button class='reliable' placeholder='Reliable'>Reliable</button> <button class='unreliable' placeholder='Unreliable'>Unreliable</button><br>"
+    }
+
+        // 
+    	]
+	}
+	);
+
+	$('.reliable').click(function(e){
+	 var elementClicked = e.target;
+	 var clickedUrl = data.Record.url;
+	 var Author = data.Record.author;
+	 var Publisher = data.Record.publisher;
+	  $.post("worldstatevote", {url: clickedUrl, vote: "reliable", author: Author, publisher: Publisher}, function(data, status){
+	  	
+	    console.log(status);
+	  });
+	});
+	$('.unreliable').click(function(e){
+	 var elementClicked = e.target;
+	 var clickedUrl = json_data.Record.url;
+	 var Author = json_data.Record.author;
+	 var Publisher = json_data.Record.publisher;
+	  $.post("/worldstatevote", {url: clickedUrl, vote: "unreliable", author: Author, publisher: Publisher}, function(data, status){
+	    console.log(status);
+	  });
+	});
+</script>
+
+
+
+
+
+
+
+<p align="center"> <a  href="/authorpub">query author/publisher</a>  <a href="/vote">Vote</a> <a href="/worldstate">View the world state</a></p>
+
+
+
+
+
 
 <!-- <form action="authorscore" method="post">
 	<p>Search AUTHOR Score</p>

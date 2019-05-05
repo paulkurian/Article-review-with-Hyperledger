@@ -68,10 +68,19 @@
 <body>
 <div class="login-form">
 
-<h1>Vote Outcome</h1>
+<form action="voted" method="post">
+	<p>Please enter url of the article you wish to vote on-</p>
+	<input type="text" name="url">
 
-<h1> outcome= <%=out%>  </h1>
-<p> <a href="/home">Back to home page</a> </p>
+	Reliable:
+	<input type="radio" name="reliability" value="reliable">
+	Not Reliable:
+	<input type="radio" name="reliability" value="Not">
+
+	<input type="submit" name="vote">
+
+	
+</form>
 </div>
 
 
