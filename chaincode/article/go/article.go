@@ -29,6 +29,7 @@ package main
  * 2 specific Hyperledger Fabric specific libraries for Smart Contracts
  */
 import (
+	
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -239,11 +240,11 @@ func (s *SmartContract) voteGood(APIstub shim.ChaincodeStubInterface, args []str
 		article.Reliable_Score = article.Reliable_Score + 1
 
 		article.Voters = append(article.Voters, MD5Hash("article"+args[3]))
-
-		if (article.Reliable_Score<=int((2*article.Unreliable_Score)/3)){
-			article.Verdict="Unreliable"
-		} else if (article.Unreliable_Score<=int((2*article.Reliable_Score)/3)){
+		
+		if ((float64(article.Reliable_Score)/float64(article.Reliable_Score+article.Unreliable_Score))>=0.6){
 			article.Verdict="Reliable"
+		} else if ((float64(article.Unreliable_Score)/float64(article.Reliable_Score+article.Unreliable_Score))>=0.6){
+			article.Verdict="Unreliable"
 		} else{
 			article.Verdict="Undetermined"
 		}
@@ -288,10 +289,10 @@ func (s *SmartContract) voteBad(APIstub shim.ChaincodeStubInterface, args []stri
 
 		article.Voters = append(article.Voters, MD5Hash("article"+args[3]))
 
-		if (article.Reliable_Score<=int((2*article.Unreliable_Score)/3)){
-			article.Verdict="Unreliable"
-		} else if (article.Unreliable_Score<=int((2*article.Reliable_Score)/3)){
+		if ((float64(article.Reliable_Score)/float64(article.Reliable_Score+article.Unreliable_Score))>=0.6){
 			article.Verdict="Reliable"
+		} else if ((float64(article.Unreliable_Score)/float64(article.Reliable_Score+article.Unreliable_Score))>=0.6){
+			article.Verdict="Unreliable"
 		} else{
 			article.Verdict="Undetermined"
 		}

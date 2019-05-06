@@ -3,9 +3,19 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Login Form Tutorial</title>
+				<script src="https://apis.google.com/js/platform.js" async defer></script>
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<!-- jQuery library -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+
 		<style>
 		.login-form {
-			width: 300px;
+			width: 400px;
 			margin: 0 auto;
 			font-family: Tahoma, Geneva, sans-serif;
 		}
@@ -13,7 +23,7 @@
 			text-align: center;
 			color: #4d4d4d;
 			font-size: 24px;
-			padding: 20px 0 20px 0;
+			padding: 20px ;
 		}
 		.login-form input[type="password"],
 		.login-form input[type="text"] {
@@ -44,8 +54,9 @@
 			color: #ffffff;
 		}
 		.login-form a {
+			font-size: 28px;
 			width: 100%;
-			padding: 15px;
+			padding: 20px;
 			background-color: #535b63;
 			border: 0;
 			box-sizing: border-box;
@@ -68,19 +79,17 @@
 
 		</style>
 	</head>
-<body>
-<div class="login-form">
-
-<ul> 
-	<%=obj%>
-	
-</ul>
-<h1> <a href="/home">Return Home</a> </h1>
-</div>
-
-
-
-
-<body> 
-
+	<body>
+		<div class="login-form">
+			<h1>Welcome</h1>
+			<h1 class=" bg-info" align="center"> <%=out%></h1>
+			
+			<!-- <input type="button" name="password" placeholder="Register User" value="register user" onclick="adii" /> --> 
+		
+			<h1> <a href="/home" class="btn btn-info" >Enter CryptoVote</a> </h1>
+			<br>
+			
+			
+		</div>
+	</body>
 </html>

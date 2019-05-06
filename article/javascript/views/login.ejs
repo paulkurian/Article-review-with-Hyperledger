@@ -6,10 +6,12 @@
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css">
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
 		<script src="https://apis.google.com/js/platform.js" async defer></script>
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
 
 		<style>
 		.login-form {
-			width: 300px;
+			
 			margin: 0 auto;
 			font-family: Tahoma, Geneva, sans-serif;
 		}
@@ -17,7 +19,13 @@
 			text-align: center;
 			color: #4d4d4d;
 			font-size: 24px;
-			padding: 20px 0 20px 0;
+			padding: 20px ;
+		}
+		.login-form h2 {
+			text-align: center;
+			color: #4d4d4d;
+			font-size: 35px;
+			padding: 20px ;
 		}
 		.login-form input[type="password"],
 		.login-form input[type="text"] {
@@ -48,6 +56,10 @@
 			font-weight: bold;
 			color: #ffffff;
 		}
+		.nav {
+            height: 30px;
+        line-height: 30px;
+    }
 
 
 		
@@ -56,20 +68,20 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
 
 	<body>
-
-  
-
-
 		<div class="login-form">
+			<nav class="nav-wrapper blue-grey lighten-1 ">
+				<h2 class=" blue-grey lighten-1   " align="center" >Crypto Vote</h2>
+			<h1 >Please login using your Google account-</h1>
 
-				
+			</nav>
 			<br>
-			<br><br>
-
-			<h1>Login using your Google account</h1>
-
-			  <h1><div class="btn white darken-4 col s10 m4" align="center" >
-     			<a style="text-align:center" href = <%= obj %> style="text-transform:none">
+			<br>
+			<br>
+			<br>
+		
+			
+			  <h1  ><div class="btn white darken-4 col s15 m6" padding='20px' align="center" >
+     			<a class=" blue-grey-text lighten-1   " style="text-align:center" href = <%= obj %> >
         		 <div class="left">
           	   <img align="left" width="35px" alt="Google &quot;G&quot; Logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png"/>
        	      </div>

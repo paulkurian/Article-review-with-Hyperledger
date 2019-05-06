@@ -3,9 +3,21 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Login Form Tutorial</title>
+
+		<script src="https://apis.google.com/js/platform.js" async defer></script>
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<!-- jQuery library -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+
+		
 		<style>
 		.login-form {
-			width: 300px;
+			width: 350px;
 			margin: 0 auto;
 			font-family: Tahoma, Geneva, sans-serif;
 		}
@@ -13,7 +25,7 @@
 			text-align: center;
 			color: #4d4d4d;
 			font-size: 24px;
-			padding: 20px 0 20px 0;
+			padding: 20px ;
 		}
 		.login-form input[type="password"],
 		.login-form input[type="text"] {
@@ -69,16 +81,30 @@
 		</style>
 	</head>
 	<body>
+		
+	<div class='container'>
 		<div class="login-form">
-			<h1>Enter details of the Article you wish to vote on</h1>
+			<br>
+		<h1 class=" bg-info text-muted" align="center">Enter details of the Article you wish to vote on</h1>
+		<br>
+			
 			<form action="voted" method="post">
 				<input type="text" name="url" placeholder="url" required>
 				<input type="text" name="Author" placeholder="Author" >
 				<input type="text" name="Publisher" placeholder="Publisher" >
-				Reliable:
-				<input type="radio" name="reliability" value="reliable">
-				Not Reliable:
-				<input type="radio" name="reliability" value="Not">
+				
+				<label class='radio-inline'>
+
+				
+				<input type="radio" name="reliability" value="reliable">Reliable</label>
+				
+				<label class='radio-inline'>
+				
+				<input type="radio" name="reliability" value="Not"> Unreliable</label>
+
+				<br>
+				<br>
+				
 
 				<input type="submit" name="vote">
 
@@ -86,7 +112,9 @@
 			</form>
 			<!-- <input type="button" name="password" placeholder="Register User" value="register user" onclick="adii" /> --> 
 			<br>
-			<h1> <a href="/home">Return</a> </h1>
+			<a href="/home" class="btn btn-info" role="button">Return to home page</a>
+			
+		</div>
 		</div>
 	</body>
 </html>

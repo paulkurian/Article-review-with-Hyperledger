@@ -3,6 +3,16 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Login Form Tutorial</title>
+				<script src="https://apis.google.com/js/platform.js" async defer></script>
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<!-- jQuery library -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+
 		<style>
 		.login-form {
 			width: 300px;
@@ -68,11 +78,13 @@
 <body>
 <div class="login-form">
 
-<ul> 
-	<%=out%>
+ 
+	<h1><%=out%></h1>
 	
-</ul>
-<h1> <a href="/home">Return Home</a> </h1>
+<br>
+<a href="/home" class="btn btn-info" role="button">Return to home page</a>
+
+
 </div>
 
 

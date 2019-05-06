@@ -3,9 +3,18 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Login Form Tutorial</title>
+			<script src="https://apis.google.com/js/platform.js" async defer></script>
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<!-- jQuery library -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
 		<style>
 		.login-form {
-			width: 300px;
+			width: 350px;
 			margin: 0 auto;
 			font-family: Tahoma, Geneva, sans-serif;
 		}
@@ -13,7 +22,7 @@
 			text-align: center;
 			color: #4d4d4d;
 			font-size: 24px;
-			padding: 20px 0 20px 0;
+			padding: 20px; 
 		}
 		.login-form input[type="password"],
 		.login-form input[type="text"] {
@@ -69,13 +78,26 @@
 		</style>
 	</head>
 <body>
+	<div class='container'>
 <div class="login-form">
+	<h1 align="center" color='#4d4d4d' font-size='24px' padding='20px'>Enter details of <%=out.url%> <br> (optional)</h1>
 
-<ul> 
-	<%=obj%>
 	
-</ul>
-<h1> <a href="/home">Return Home</a> </h1>
+			<form action="wsauthpubvoted" method="post">
+				<input type="hidden" name="url" value= <%=out.url%>  >
+				<input type="hidden" name="reliability" value= <%=out.reliability%>>
+				<input type="text" name="author" placeholder="Author" >
+				<input type="text" name="publisher" placeholder="Publisher" >
+				
+				<input type="submit" name="vote">
+
+				
+			</form>
+			<!-- <input type="button" name="password" placeholder="Register User" value="register user" onclick="adii" /> --> 
+			<br>
+			
+			<a href="/worldstate" class="btn btn-info" role="button">Return to home page</a>
+			</div>
 </div>
 
 

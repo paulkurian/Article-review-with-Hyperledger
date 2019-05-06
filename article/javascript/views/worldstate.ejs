@@ -3,9 +3,37 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Login Form Tutorial</title>
+
+			<script src="https://apis.google.com/js/platform.js" async defer></script>
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+		
+<style>
+		.navbar-fixed-top {
+    min-height: 70px;
+}
+
+.navbar-nav > li > a {
+    padding-top: 0px;
+    padding-bottom: 0px;
+    line-height: 65px;
+}
+
+@media (max-width: 700px) {
+    .navbar-nav > li > a {
+    line-height: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;}
+}
+</style>
 		<style>
 		.login-form {
-			width: 900px;
+			width: 1000px;
 			margin: 0 auto;
 			font-family: Tahoma, Geneva, sans-serif;
 		}
@@ -67,25 +95,48 @@
 		</style>
 	</head>
 
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script><!--Import jQuery before export.js-->
-    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script type="text/javascript"  src=" https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript"  src=" https://cdn.datatables.net/buttons/1.2.4/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript"  src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
+<script type="text/javascript" src="https://cdn.rawgit.com/bpampuch/pdfmake/0.1.24/build/pdfmake.min.js" ></script>
+<script type="text/javascript"  src="https://cdn.rawgit.com/bpampuch/pdfmake/0.1.24/build/vfs_fonts.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.2.4/js/buttons.html5.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.2.1/js/buttons.print.min.js"></script>
+<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
 
-
-    <!--Data Table-->
-    <script type="text/javascript"  src=" https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
-    <script type="text/javascript"  src=" https://cdn.datatables.net/buttons/1.2.4/js/dataTables.buttons.min.js"></script>
-
-    <!--Export table buttons-->
-    <script type="text/javascript"  src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
-    <script type="text/javascript" src="https://cdn.rawgit.com/bpampuch/pdfmake/0.1.24/build/pdfmake.min.js" ></script>
-    <script type="text/javascript"  src="https://cdn.rawgit.com/bpampuch/pdfmake/0.1.24/build/vfs_fonts.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.2.4/js/buttons.html5.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.2.1/js/buttons.print.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
 <body>
+
+			<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+   
+
+    <ul class="nav navbar-nav ">
+    	<li><a class="navbar-brand" href="/home">CryptoVote</a></li>
+      <li><a href="/home">Home</a></li>
+      <li><a href="/vote">Vote</a></li>
+      <li><a href="/authorpub">query author/publisher</a></li>
+      <li class="active"><a href="/worldstate">World State</a></li>
+      <li><a href="/admindata">Admin Data</a></li>
+      
+    </ul>
+    <ul class="nav navbar-nav navbar-right">
+      
+      <li><a href="/logout"><span class="glyphicon glyphicon-log-in"></span> Logout</a></li>
+    </ul>
+  </div>
+</nav>
+
+<h1 class=" bg-info text-muted" align="center">World State</h1>
+
+<br>
+<br>
+
+<div class='container'>
+
 <div class="login-form">
-<h1 align="center">World State</h1>
-<table id="example" class="ui celled table" style="width:100%">
+<table id="example" class="table table-hover" style="width:100%">
     <thead>
         <tr>
             <th>Name</th>
@@ -129,7 +180,7 @@ $(document).ready(function () {
         { title: "Verdict", "data": "Record.verdict"},
         {
       "data": null,
-      "defaultContent": "<button class='reliable' name = 1 placeholder='Reliable'>Reliable</button> <button class='unreliable' name = 2 placeholder='Unreliable'>Unreliable</button><br>"
+      "defaultContent": "  <button  class='reliable btn btn-primary btn-xs' class name = 1 placeholder='Reliable'>Reliable</button> <button class='unreliable btn btn-basic btn-xs' name = 2 placeholder='Unreliable'>Unreliable</button><br> <br>"
     }
 
         // 
@@ -142,9 +193,15 @@ $(document).ready(function () {
 		var clickedUrl = data.Record.url;
 		var Author = data.Record.author;
 		var Publisher = data.Record.publisher;
+		if (Author==""||Publisher==""){
+			window.location = '/wsauthpub?url='+clickedUrl+'&reliability=reliable';
+		}
+		else{
 		$.post("worldstatevote", {url: clickedUrl, vote: "reliable", author: Author, publisher: Publisher}, function(data_js, status){
 		console.log(status);
 		console.log(data_js);
+
+		
 
 		if (data_js.out == '"Transaction was Successful"') {
 			window.location = '/wsprelim?response=succ';
@@ -155,6 +212,7 @@ $(document).ready(function () {
 
 		// window.location = '/wsprelim';
 	  });
+	}
      } );
 
 
@@ -165,8 +223,16 @@ $(document).ready(function () {
 		var clickedUrl = data.Record.url;
 		var Author = data.Record.author;
 		var Publisher = data.Record.publisher;
+
+
 		//var vote_data = {url: clickedUrl, vote: "unreliable", author: Author, publisher: Publisher}
 		//console.log(vote_data.author)
+		if (Author==""||Publisher==""){
+			window.location = '/wsauthpub?url='+clickedUrl+'&reliability=unreliable';
+		}
+		else{
+
+
 		$.post("/worldstatevote", {url: clickedUrl, vote: "unreliable", author: Author, publisher: Publisher}, function(data_js, status){
 		console.log(status);
 		console.log(data_js);
@@ -178,7 +244,9 @@ $(document).ready(function () {
 			window.location = '/wsprelim?response=unsucc';
 		}
 
+
 	  });
+	 }
      } );
    
 });
@@ -206,10 +274,6 @@ $(document).ready(function () {
 </script>
 
 
-<p align="center"> <a  href="/home">Return Home</a>  </p>
-
-
-
 
 
 
@@ -233,6 +297,7 @@ $(document).ready(function () {
 
 	
 </form> -->
+</div>
 </div>
 
 

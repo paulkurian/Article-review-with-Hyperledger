@@ -26,6 +26,11 @@ const articles= [
 	{id: 4, url: "TWP", Author: "Mahavir Jhawar", Publisher: "The Washington Post"},
 ];
 
+const admin = ["paul.kurian_ug19@ashoka.edu.in","aditya.singh_ug19@ashoka.edu.in"];
+var registered_users = new Set();
+var no_of_votes=0;
+
+
 function wait(ms){
    var start = new Date().getTime();
    var end = start;
@@ -213,6 +218,7 @@ async function regUser(username) {
 	        const userIdentity = X509WalletMixin.createIdentity('Org1MSP', enrollment.certificate, enrollment.key.toBytes());
 	        wallet.import(username, userIdentity);
 	        console.log('Successfully registered and enrolled user '+username+' and imported it into the wallet');
+	        registered_users.add(username);
 	        
 			
 
@@ -233,6 +239,12 @@ app.get('/', function(request, response) {
 	var url = getAuthUrl();
 		response.render('login',{obj:url})
 });
+
+app.get('/logout', function(request, response) {
+	var url = getAuthUrl();
+	response.render('login',{obj:url})
+});
+
 
 app.get('/interm', function(request, response) {
 	var oauth2Client = getOAuthClient();
@@ -268,7 +280,7 @@ app.get('/interm', function(request, response) {
 		votedFor[email]=[]
         request.session.username=email;
         regUser(request.session.username).then(function(){
-				response.redirect('/home');	    
+				response.redirect('/welcome');	    
 		}).catch(function(){
 		    console.log("Error from regUser");
 		    //response.render(JSON.stringify(msg));
@@ -289,13 +301,19 @@ app.get('/interm', function(request, response) {
     });
 });
 
+
+app.get('/welcome', function(request, response) {
+	response.render('welcome',{out: email});
+});
+
+
 app.get('/register', function(request, response) {
 	response.sendFile(path.join(__dirname + '/register.html'));
 });
 
 app.get('/authorpub', function(request, response) {
 	if (request.session.loggedin) {
-	response.render('authorscore')
+	response.sendFile(path.join(__dirname + '/authorpub.html'));
 	} else {
 		response.redirect('/');
 	}
@@ -303,7 +321,7 @@ app.get('/authorpub', function(request, response) {
 });
 
 
-app.post('/authorpub', function(request, response) {
+app.post('/authorpubrcv', function(request, response) {
 	var name=request.body.name;
 	var authpub = request.body.authpub;
 	var funcname = authpub
@@ -584,6 +602,7 @@ app.post('/voted', function(request, response) {
 
 	    testObj=msg.toString();
 	    
+	    no_of_votes=no_of_votes+1;
 	   
 	    response.render('votingresult', {out:JSON.stringify(msg)});
 
@@ -634,6 +653,7 @@ app.post('/worldstatevote', function(request, response) {
 	    
 	     console.log("Vidurrrrrrr")
 	     //response.sendFile(path.join(__dirname + '/vote.html'));
+	     no_of_votes=no_of_votes+1;
 	     response.send({out:JSON.stringify(msg)});
 	     //response.sendFile(path.join(__dirname + 'views/votingresult.ejs'));
 
@@ -666,6 +686,94 @@ app.get('/wsprelim', function(request, response) {
 	}
 
 	response.render('wsprelim.ejs', {out: send_string})
+});
+
+
+app.get('/admindata', function(request, response) {
+	if(admin.includes(request.session.username)){
+
+	var funcname = "queryAllArticles"
+		args=[request.session.username,funcname]
+		
+		
+
+		
+		query(args).then(function(msg){
+		    var author_list=new Set();
+			var publisher_list=new Set();
+			var ledgerlength=0;
+		    testObj=msg.toString();
+		    obj=JSON.parse(testObj)
+		    var final_obj=[];
+		    for(var propt in obj){
+		    	author_list.add(obj[propt].Record.author)
+		    	console.log (obj[propt].Record.author)
+		    	console.log(author_list.size);
+		    	publisher_list.add(obj[propt].Record.publisher)
+		    	ledgerlength=ledgerlength+1;
+		    	
+
+		     }
+		    response.render('admindata.ejs', {out: {users:registered_users.size, nvoters: no_of_votes, nauthors: author_list.size, npublishers: publisher_list.size, nledger:ledgerlength }})
+			});
+	
+
+	//response.render('admindata.ejs', {out: {users:registered_users, nvoters: no_of_votes, nauthors: author_list.length, npublishers: publisher_list.length, nledger:ledgerlength }})
+	}
+	else{
+		response.send("Sorry you are not an admin");
+	}
+
+});
+
+app.post('/wsauthpubvoted', function(request, response) {
+	var url = request.body.url
+	var Author = request.body.author
+	var Publisher = request.body.publisher
+	var reliability = request.body.reliability
+
+	var funcname
+	
+
+	if (reliability=="reliable"){
+		funcname="voteGood"
+	} else{
+		funcname="voteBad"
+	}
+
+	var args=[request.session.username,funcname,url,Publisher,Author,request.session.username]
+	var obj
+
+		
+	invoke(args).then(function(msg){
+	    
+
+	    testObj=msg.toString();
+	    
+	    no_of_votes=no_of_votes+1;
+	   
+	    response.render('votingresult', {out:JSON.stringify(msg)});
+
+	 }).catch(function(msg){
+	     console.log(msg.toString());
+	     response.render('votingresult',{out:JSON.stringify(msg)});
+	 });
+
+	 votedFor[request.session.username].push(url)
+
+	
+
+});
+
+app.get('/wsauthpub', function(request, response) {
+	var url = request.query.url;
+	var reliability = request.query.reliability;
+
+	
+
+	
+
+	response.render('wsprelimauthpub.ejs', {out: {url:url, reliability:reliability}})
 });
 
 app.listen(3000);

@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Login Form Tutorial</title>
-				<script src="https://apis.google.com/js/platform.js" async defer></script>
+			<script src="https://apis.google.com/js/platform.js" async defer></script>
 		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
 <!-- jQuery library -->
@@ -12,10 +12,9 @@
 <!-- Latest compiled JavaScript -->
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
 
-
 		<style>
 		.login-form {
-			width: 300px;
+			width: 350px;
 			margin: 0 auto;
 			font-family: Tahoma, Geneva, sans-serif;
 		}
@@ -79,19 +78,26 @@
 		</style>
 	</head>
 	<body>
-<div class="login-form">
-
-<h1> <%=out%> </h1>
-	
-	
-<br>
-<a href="/worldstate" class="btn btn-info" role="button">Return to World State</a>
-
-
-</div>
-
-
-
-
-<body> 
+		<br>
+		<div class='container'>
+		<div class="login-form">
+			<h1 class=" bg-info text-muted" align="center">Query author/publisher score</h1>
+			<form action="authorpubrcv" method="post">
+				<input type="text" name="name" placeholder="Author/publisher" required>
+				
+				<label class='radio-inline'>
+				<input type="radio" name="authpub" value="queryAuthor">author</label>
+				
+				<label class='radio-inline'>
+				<input type="radio" name="authpub" value="queryPublisher">publisher</label> <br>
+				<br>
+				<input type="submit" >
+			</form>
+			<br>
+			<a href="/home" class="btn btn-info" role="button">Return to home page</a>
+			<!-- <input type="button" name="password" placeholder="Register User" value="register user" onclick="adii" /> --> 
+			<br>
+			
+		</div></div>
+	</body>
 </html>
