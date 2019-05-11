@@ -1,4 +1,4 @@
-var mysql = require('mysql');
+//var mysql = require('mysql');
 var express = require('express');
 var session = require('express-session');
 var bodyParser = require('body-parser');
@@ -11,12 +11,12 @@ const ClientId = "527034111921-kjvg4peji2gbjgs0pvkiefl3ou3s505t.apps.googleuserc
 const ClientSecret = "8i6_y9FGrIttCYHbvk6_KXSz";
 const RedirectionUrl = "http://localhost:3000/interm";
 
-var connection = mysql.createConnection({
-	host     : 'localhost',
-	user     : 'root',
-	password : 'password',
-	database : 'nodelogin'
-});
+// var connection = mysql.createConnection({
+// 	host     : 'localhost',
+// 	user     : 'root',
+// 	password : 'password',
+// 	database : 'nodelogin'
+// });
 'use strict';
 
 const articles= [
